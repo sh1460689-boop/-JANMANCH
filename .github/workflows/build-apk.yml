@@ -13,6 +13,10 @@ jobs:
           channel: 'stable'
           cache: true
 
+      - name: Create Clean Flutter Project
+        run: |
+          flutter create . --org com.example.janmanch --project-name jan_manch --platforms=android
+
       - name: Setup Manifest and Source Code
         run: |
           mkdir -p lib
@@ -610,7 +614,7 @@ jobs:
                                     errorBuilder: (_, __, ___) => Container(width: 80, height: 55, color: Colors.grey.shade300),
                                   ),
                                   title: Text(v['title'], maxLines: 2, overflow: TextOverflow.ellipsis, style: const TextStyle(fontSize: 12, fontWeight: FontWeight.bold)),
-                                  subtitle: Text('${v['channel']} • ${v['category']}', style: const TextStyle(fontSize: 10)),
+                                  subtitle: Text('${v['channel']} •${v['category']}', style: const TextStyle(fontSize: 10)),
                                   trailing: IconButton(
                                     icon: Icon(v['type'] == 'app' ? Icons.download : Icons.ondemand_video,
                                         color: v['type'] == 'app' ? Colors.green : Colors.red),
@@ -810,98 +814,4 @@ jobs:
               return Scaffold(
                 appBar: AppBar(title: Text('Live Call: $cleanRoom'), backgroundColor: Colors.green),
                 body: InAppWebView(
-                  initialUrlRequest: URLRequest(url: WebUri('https://meet.jit.si/$cleanRoom')),
-                  initialSettings: InAppWebViewSettings(
-                    mediaPlaybackRequiresUserGesture: false,
-                    allowsInlineMediaPlayback: true,
-                    javaScriptEnabled: true,
-                  ),
-                  onPermissionRequest: (controller, request) async {
-                    return PermissionResponse(
-                      resources: request.resources,
-                      action: PermissionResponseAction.GRANT,
-                    );
-                  },
-                ),
-              );
-            }
-          }
-
-          class YTPlayer extends StatelessWidget {
-            final String videoId;
-            const YTPlayer({super.key, required this.videoId});
-
-            @override
-            Widget build(BuildContext context) {
-              return Scaffold(
-                appBar: AppBar(title: const Text('YouTube Streaming'), backgroundColor: Colors.red),
-                body: InAppWebView(
-                  initialUrlRequest: URLRequest(url: WebUri('https://www.youtube.com/watch?v=$videoId')),
-                  initialSettings: InAppWebViewSettings(javaScriptEnabled: true),
-                ),
-              );
-            }
-          }
-
-          class NativePlayer extends StatefulWidget {
-            final String url;
-            final String title;
-            final bool isLocal;
-            const NativePlayer({super.key, required this.url, required this.title, required this.isLocal});
-
-            @override
-            State<NativePlayer> createState() => _NativePlayerState();
-          }
-
-          class _NativePlayerState extends State<NativePlayer> {
-            VideoPlayerController? _vCtrl;
-            ChewieController? _cCtrl;
-
-            @override
-            void initState() {
-              super.initState();
-              if (widget.isLocal) {
-                _vCtrl = VideoPlayerController.file(File(widget.url));
-              } else {
-                _vCtrl = VideoPlayerController.networkUrl(Uri.parse(widget.url));
-              }
-
-              _vCtrl!.initialize().then((_) {
-                if (mounted) {
-                  setState(() {
-                    _cCtrl = ChewieController(videoPlayerController: _vCtrl!, autoPlay: true);
-                  });
-                }
-              });
-            }
-
-            @override
-            void dispose() {
-              _vCtrl?.dispose();
-              _cCtrl?.dispose();
-              super.dispose();
-            }
-
-            @override
-            Widget build(BuildContext context) {
-              return Scaffold(
-                appBar: AppBar(title: Text(widget.title), backgroundColor: Colors.orange),
-                body: _cCtrl != null && _vCtrl!.value.isInitialized
-                    ? Chewie(controller: _cCtrl!)
-                    : const Center(child: CircularProgressIndicator()),
-              );
-            }
-          }
-          EOF
-
-      - name: Install Flutter Packages
-        run: flutter pub get
-
-      - name: Build Standalone Release APK
-        run: flutter build apk --release
-
-      - name: Upload Finished APK
-        uses: actions/upload-artifact@v4
-        with:
-          name: jan-manch-final-pro-release
-          path: build/app/outputs/flutter-apk/app-release.apk
+                  initialUrlRequest: URLRequest(url: WebUri('
