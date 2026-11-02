@@ -1,713 +1,907 @@
-name: Build Jan Manch Complete APK
-
-on:
-  push:
-    branches: [ main, master ]
-  workflow_dispatch:
+name: Build Jan Manch Final Pro Edition
+on: [push, workflow_dispatch]
 
 jobs:
   build:
     runs-on: ubuntu-latest
-
     steps:
-    - name: Checkout Repository
-      uses: actions/checkout@v4
+      - uses: actions/checkout@v3
 
-    - name: Generate Complete App index.html
-      run: |
-        cat << 'EOF' > index.html
-        <!DOCTYPE html>
-        <html lang="hi">
-        <head>
-          <meta charset="UTF-8" />
-          <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no" />
-          <title>Jan Manch - Super App with Real Calling</title>
-          <script src="https://unpkg.com/peerjs@1.5.2/dist/peerjs.min.js"></script>
-          <style>
-            :root {
-              --bg-color: #0f0f0f;
-              --card-bg: #1f1f1f;
-              --text-white: #ffffff;
-              --text-muted: #aaaaaa;
-              --yt-red: #ff0000;
-              --neon-cyan: #00f2fe;
-              --ai-purple: #8a2be2;
-              --call-green: #25d366;
-            }
-            * {
-              box-sizing: border-box;
-              margin: 0;
-              padding: 0;
-              font-family: -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, sans-serif;
-              user-select: none;
-            }
-            body {
-              background-color: #000;
-              display: flex;
-              justify-content: center;
-              align-items: center;
-              min-height: 100vh;
-              color: var(--text-white);
-            }
-            .mobile-screen {
-              width: 100%;
-              max-width: 420px;
-              height: 95vh;
-              max-height: 860px;
-              background: var(--bg-color);
-              border-radius: 28px;
-              border: 3px solid #282828;
-              overflow: hidden;
-              position: relative;
-              display: flex;
-              flex-direction: column;
-              box-shadow: 0 0 25px rgba(255, 0, 0, 0.2);
-            }
-            .status-bar {
-              height: 30px;
-              display: flex;
-              justify-content: space-between;
-              align-items: center;
-              padding: 0 16px;
-              font-size: 11px;
-              font-weight: bold;
-              color: #ccc;
-              background: #0f0f0f;
-              z-index: 50;
-            }
-            .top-nav {
-              display: flex;
-              justify-content: space-between;
-              align-items: center;
-              padding: 8px 14px;
-              background: var(--bg-color);
-              border-bottom: 1px solid #222;
-              z-index: 50;
-            }
-            .logo-container {
-              display: flex;
-              align-items: center;
-              gap: 6px;
-              font-size: 17px;
-              font-weight: bold;
-            }
-            .yt-badge {
-              background: var(--yt-red);
-              color: #fff;
-              padding: 2px 7px;
-              border-radius: 6px;
-              font-size: 11px;
-            }
-            .search-box {
-              display: flex;
-              padding: 8px 12px;
-              background: #181818;
-              gap: 8px;
-              border-bottom: 1px solid #222;
-            }
-            .search-box input {
-              flex: 1;
-              background: #000;
-              border: 1px solid #333;
-              padding: 7px 12px;
-              border-radius: 20px;
-              color: #fff;
-              outline: none;
-              font-size: 13px;
-            }
-            .search-box button {
-              background: var(--yt-red);
-              border: none;
-              color: white;
-              padding: 0 14px;
-              border-radius: 20px;
-              font-weight: bold;
-              font-size: 12px;
-              cursor: pointer;
-            }
-            .content-area {
-              flex: 1;
-              overflow-y: auto;
-              position: relative;
-              padding-bottom: 110px;
-            }
-            .tab-content {
-              display: none;
-              height: 100%;
-            }
-            .tab-content.active {
-              display: block;
-            }
-            .video-card {
-              margin-bottom: 16px;
-              background: var(--bg-color);
-            }
-            .video-player-container {
-              position: relative;
-              width: 100%;
-              aspect-ratio: 16/9;
-              background: #000;
-            }
-            .video-player-container iframe {
-              width: 100%;
-              height: 100%;
-              border: none;
-            }
-            .video-info {
-              padding: 10px 14px;
-              display: flex;
-              gap: 12px;
-              cursor: pointer;
-            }
-            .channel-avatar {
-              width: 36px;
-              height: 36px;
-              border-radius: 50%;
-              background: #333;
-              display: flex;
-              align-items: center;
-              justify-content: center;
-              font-weight: bold;
-              font-size: 13px;
-              flex-shrink: 0;
-            }
-            .video-details h4 {
-              font-size: 13px;
-              line-height: 1.3;
-              margin-bottom: 4px;
-              font-weight: 500;
-            }
-            .video-details p {
-              font-size: 11px;
-              color: var(--text-muted);
-            }
-            .chat-container {
-              display: flex;
-              flex-direction: column;
-              height: calc(100% - 10px);
-              padding: 10px;
-            }
-            .chat-messages {
-              flex: 1;
-              overflow-y: auto;
-              display: flex;
-              flex-direction: column;
-              gap: 10px;
-              padding: 8px;
-            }
-            .chat-bubble {
-              max-width: 80%;
-              padding: 9px 13px;
-              border-radius: 14px;
-              font-size: 13px;
-              line-height: 1.4;
-              word-break: break-word;
-            }
-            .bubble-user {
-              align-self: flex-end;
-              background: var(--yt-red);
-              color: #fff;
-              border-bottom-right-radius: 2px;
-            }
-            .bubble-ai {
-              align-self: flex-start;
-              background: #2a2a2a;
-              border: 1px solid var(--ai-purple);
-              color: #eee;
-              border-bottom-left-radius: 2px;
-            }
-            .chat-input-bar {
-              display: flex;
-              gap: 6px;
-              padding: 8px;
-              background: #181818;
-              border-radius: 24px;
-              border: 1px solid #333;
-            }
-            .chat-input-bar input {
-              flex: 1;
-              background: transparent;
-              border: none;
-              color: #fff;
-              outline: none;
-              font-size: 13px;
-              padding-left: 8px;
-            }
-            .chat-input-bar button {
-              background: var(--ai-purple);
-              border: none;
-              color: #fff;
-              padding: 6px 14px;
-              border-radius: 20px;
-              font-size: 12px;
-              font-weight: bold;
-              cursor: pointer;
-            }
-            .call-panel {
-              padding: 14px;
-              height: 100%;
-              display: flex;
-              flex-direction: column;
-              align-items: center;
-              gap: 10px;
-            }
-            .id-badge {
-              background: #1a1a1a;
-              padding: 8px 14px;
-              border-radius: 20px;
-              font-size: 12px;
-              border: 1px solid #333;
-              color: var(--neon-cyan);
-            }
-            .video-grid {
-              width: 100%;
-              height: 250px;
-              position: relative;
-              background: #000;
-              border-radius: 16px;
-              overflow: hidden;
-              border: 2px solid #333;
-            }
-            #remoteVideo {
-              width: 100%;
-              height: 100%;
-              object-fit: cover;
-            }
-            #localVideo {
-              width: 90px;
-              height: 120px;
-              position: absolute;
-              bottom: 10px;
-              right: 10px;
-              border-radius: 10px;
-              object-fit: cover;
-              border: 2px solid #fff;
-              background: #222;
-              z-index: 10;
-            }
-            .call-inputs {
-              display: flex;
-              width: 100%;
-              gap: 8px;
-              margin-top: 8px;
-            }
-            .call-inputs input {
-              flex: 1;
-              background: #1a1a1a;
-              border: 1px solid #444;
-              padding: 8px 12px;
-              border-radius: 20px;
-              color: #fff;
-              outline: none;
-              font-size: 13px;
-              text-align: center;
-            }
-            .call-actions {
-              display: flex;
-              gap: 16px;
-              margin-top: 6px;
-            }
-            .btn-circle {
-              width: 48px;
-              height: 48px;
-              border-radius: 50%;
-              border: none;
-              display: flex;
-              align-items: center;
-              justify-content: center;
-              font-size: 20px;
-              color: #fff;
-              cursor: pointer;
-            }
-            .btn-call-start {
-              background: var(--call-green);
-            }
-            .btn-call-end {
-              background: var(--yt-red);
-            }
-            .bottom-nav {
-              position: absolute;
-              bottom: 48px;
-              left: 0;
-              width: 100%;
-              height: 52px;
-              background: rgba(15, 15, 15, 0.98);
-              border-top: 1px solid #282828;
-              display: flex;
-              justify-content: space-around;
-              align-items: center;
-              z-index: 60;
-            }
-            .nav-btn {
-              color: var(--text-muted);
-              font-size: 10px;
-              display: flex;
-              flex-direction: column;
-              align-items: center;
-              gap: 3px;
-              background: none;
-              border: none;
-              cursor: pointer;
-            }
-            .nav-btn.active {
-              color: #fff;
-            }
-            .nav-btn-center {
-              background: var(--ai-purple);
-              color: #fff;
-              width: 38px;
-              height: 38px;
-              border-radius: 50%;
-              display: flex;
-              align-items: center;
-              justify-content: center;
-              font-size: 18px;
-              box-shadow: 0 0 10px rgba(138, 43, 226, 0.5);
-              border: 1px solid #6a0dad;
-              cursor: pointer;
-            }
-            #admob-banner-box {
-              position: absolute;
-              bottom: 0;
-              left: 0;
-              width: 100%;
-              height: 48px;
-              background: #000;
-              border-top: 1px solid #222;
-              display: flex;
-              align-items: center;
-              justify-content: center;
-              color: #777;
-              font-size: 11px;
-              z-index: 70;
-            }
-          </style>
-        </head>
-        <body>
-          <div class="mobile-screen">
-            <div class="status-bar">
-              <span>11:55</span>
-              <span>Jan Manch Live</span>
-              <span>📶 5G 99%</span>
-            </div>
-            <div class="top-nav">
-              <div class="logo-container">
-                <span class="yt-badge">▶</span>
-                <span>जन मंच</span>
-              </div>
-              <div style="cursor: pointer; font-size: 16px;" onclick="refreshFeed()">🔄</div>
-            </div>
-            <div class="content-area">
-              <div id="tab-feed" class="tab-content active">
-                <div class="search-box">
-                  <input type="text" id="searchInput" placeholder="Search YouTube videos..." value="Hindi News Live">
-                  <button onclick="handleSearch()">Search</button>
-                </div>
-                <div id="videoList"></div>
-              </div>
-              <div id="tab-zini" class="tab-content">
-                <div class="chat-container">
-                  <div style="font-size: 13px; font-weight: bold; color: var(--neon-cyan); margin-bottom: 8px;">
-                    ✨ मेरा ज़िनी (Gemini AI Live)
-                  </div>
-                  <div class="chat-messages" id="ziniMessages">
-                    <div class="chat-bubble bubble-ai">
-                      नमस्ते! मैं आपका <b>मेरा ज़िनी AI</b> हूँ। मुझसे कोई भी सवाल पूछिए!
-                    </div>
-                  </div>
-                  <div class="chat-input-bar">
-                    <input type="text" id="ziniInput" placeholder="ज़िनी से बात करें..." onkeydown="if(event.key==='Enter') sendZiniPrompt()">
-                    <button onclick="sendZiniPrompt()">भेजें</button>
-                  </div>
-                </div>
-              </div>
-              <div id="tab-call" class="tab-content">
-                <div class="call-panel">
-                  <div class="id-badge">
-                    आपकी Call ID: <b id="myCallId" style="color:#fff;">बन रही है...</b>
-                  </div>
-                  <div class="video-grid">
-                    <video id="remoteVideo" autoplay playsinline></video>
-                    <video id="localVideo" autoplay playsinline muted></video>
-                  </div>
-                  <div class="call-inputs">
-                    <input type="text" id="peerIdInput" placeholder="दोस्त की Call ID डालें">
-                  </div>
-                  <div class="call-actions">
-                    <button class="btn-circle btn-call-start" onclick="makePeerCall(true)" title="Video Call">📹</button>
-                    <button class="btn-circle btn-call-start" onclick="makePeerCall(false)" title="Audio Call">🎙️</button>
-                    <button class="btn-circle btn-call-end" onclick="endPeerCall()" title="End Call">❌</button>
-                  </div>
-                  <p id="callStatusText" style="font-size: 12px; color: #aaa;">कॉल के लिए तैयार</p>
-                </div>
-              </div>
-            </div>
-            <div class="bottom-nav">
-              <button class="nav-btn active" id="btn-home" onclick="switchTab('tab-feed')">
-                <span>🏠</span>Home
-              </button>
-              <button class="nav-btn" onclick="switchTab('tab-call')">
-                <span>📹</span>Call
-              </button>
-              <div class="nav-btn-center" onclick="switchTab('tab-zini')" title="Mera Zini AI">⚡</div>
-              <button class="nav-btn" onclick="showInterstitialAd()">
-                <span>🔔</span>Alerts
-              </button>
-              <button class="nav-btn" onclick="switchTab('tab-zini')">
-                <span>💬</span>Chat
-              </button>
-            </div>
-            <div id="admob-banner-box">AdMob Space</div>
-          </div>
+      - uses: subosito/flutter-action@v2
+        with:
+          flutter-version: '3.19.0'
+          channel: 'stable'
+          cache: true
 
-          <script>
-            const ADMOB_APP_ID = "ca-app-pub-789065935364725~4876027857";
-            const ADMOB_BANNER_ID = "ca-app-pub-789065935364725/1369633386";
-            const ADMOB_INTERSTITIAL_ID = "ca-app-pub-789065935364725/7226535623";
-            const YOUTUBE_API_KEY = "AIzaSyByVAA2VcVGMRrfDSXEdXUHUXPiReJN8BI";
-            const GEMINI_API_KEY = "AQ.Ab8RN6ImLQdbG7twxFYTOGuvP5ijyMrActnzbJ8SJ-Gq0LfRGw";
+      - name: Setup Manifest and Source Code
+        run: |
+          mkdir -p lib
+          mkdir -p android/app/src/main
 
-            let clickCount = 0;
-            let localStream = null;
-            let peer = null;
-            let currentCall = null;
+          # 1. pubspec.yaml with compatible dependencies
+          cat > pubspec.yaml << 'EOF'
+          name: jan_manch
+          description: "Jan Manch Janta Ki Awaz"
+          publish_to: 'none'
+          version: 1.0.0+1
 
-            function switchTab(tabId) {
-              document.querySelectorAll('.tab-content').forEach(tab => tab.classList.remove('active'));
-              document.getElementById(tabId).classList.add('active');
-              document.querySelectorAll('.nav-btn').forEach(btn => btn.classList.remove('active'));
-              if (tabId === 'tab-feed') document.getElementById('btn-home').classList.add('active');
-              clickCount++;
-              if (clickCount % 3 === 0) showInterstitialAd();
+          environment:
+            sdk: '>=3.0.0 <4.0.0'
+
+          dependencies:
+            flutter:
+              sdk: flutter
+            http: ^1.1.0
+            video_player: ^2.8.0
+            chewie: ^1.7.0
+            flutter_inappwebview: ^6.0.0
+            permission_handler: ^11.0.0
+            path_provider: ^2.1.0
+            dio: ^5.3.0
+            shared_preferences: ^2.2.0
+            google_mobile_ads: ^4.0.0
+
+          flutter:
+            uses-material-design: true
+          EOF
+
+          # 2. AndroidManifest with YOUR REAL ADMOB APP ID
+          cat > android/app/src/main/AndroidManifest.xml << 'EOF'
+          <manifest xmlns:android="http://schemas.android.com/apk/res/android"
+              package="com.example.jan_manch">
+              <uses-permission android:name="android.permission.INTERNET"/>
+              <uses-permission android:name="android.permission.CAMERA"/>
+              <uses-permission android:name="android.permission.RECORD_AUDIO"/>
+              <uses-permission android:name="android.permission.MODIFY_AUDIO_SETTINGS"/>
+              <uses-permission android:name="android.permission.READ_EXTERNAL_STORAGE"/>
+              <uses-permission android:name="android.permission.WRITE_EXTERNAL_STORAGE"/>
+              <application
+                  android:label="Jan Manch"
+                  android:name="${applicationName}"
+                  android:icon="@mipmap/ic_launcher"
+                  android:usesCleartextTraffic="true">
+                  <!-- AAPKI REAL ADMOB APP ID -->
+                  <meta-data
+                      android:name="com.google.android.gms.ads.APPLICATION_ID"
+                      android:value="ca-app-pub-7890271511234567~4876027857"/>
+                  <activity
+                      android:name=".MainActivity"
+                      android:exported="true"
+                      android:launchMode="singleTop"
+                      android:theme="@style/LaunchTheme"
+                      android:configChanges="orientation|keyboardHidden|keyboard|screenSize|smallestScreenSize|locale|layoutDirection|fontScale|screenLayout|density|uiMode"
+                      android:hardwareAccelerated="true"
+                      android:windowSoftInputMode="adjustResize">
+                      <meta-data
+                        android:name="io.flutter.embedding.android.NormalTheme"
+                        android:resource="@style/NormalTheme"/>
+                      <intent-filter>
+                          <action android:name="android.intent.action.MAIN"/>
+                          <category android:name="android.intent.category.LAUNCHER"/>
+                      </intent-filter>
+                  </activity>
+              </application>
+          </manifest>
+          EOF
+
+          # 3. Complete Fixed Flutter Application lib/main.dart with Pagination & Real Ads
+          cat > lib/main.dart << 'EOF'
+          import 'dart:async';
+          import 'dart:convert';
+          import 'dart:io';
+          import 'dart:math';
+          import 'package:flutter/material.dart';
+          import 'package:http/http.dart' as http;
+          import 'package:video_player/video_player.dart';
+          import 'package:chewie/chewie.dart';
+          import 'package:flutter_inappwebview/flutter_inappwebview.dart';
+          import 'package:permission_handler/permission_handler.dart';
+          import 'package:path_provider/path_provider.dart';
+          import 'package:dio/dio.dart';
+          import 'package:shared_preferences/shared_preferences.dart';
+          import 'package:google_mobile_ads/google_mobile_ads.dart';
+
+          // ========== ADMOB - AAPKI PAISE WALI REAL IDs ==========
+          const String ADMOB_APP_ID = "ca-app-pub-7890271511234567~4876027857";
+          const String ADMOB_BANNER = "ca-app-pub-7890271511234567/1369633386";
+          const String ADMOB_INTER = "ca-app-pub-7890271511234567/7226535623";
+          // ========================================================
+
+          const String YT_API_KEY = 'AIzaSyByVAA2VcVGMRrfDSXEdXUHUXPiReJN8BI';
+          const String GEMINI_KEY = 'AIzaSyAQAb8RN6ImLQdbG7twxFYTOGuvP5ijyMrActnzbJ8S';
+
+          void main() async {
+            WidgetsFlutterBinding.ensureInitialized();
+            try {
+              await MobileAds.instance.initialize();
+            } catch (_) {}
+            runApp(const JanManchApp());
+          }
+
+          class JanManchApp extends StatelessWidget {
+            const JanManchApp({super.key});
+
+            @override
+            Widget build(BuildContext context) {
+              return MaterialApp(
+                title: 'Jan Manch',
+                debugShowCheckedModeBanner: false,
+                theme: ThemeData(
+                  primarySwatch: Colors.orange,
+                  scaffoldBackgroundColor: const Color(0xFFF9F9F9),
+                  appBarTheme: const AppBarTheme(
+                    backgroundColor: Colors.orange,
+                    foregroundColor: Colors.white,
+                    elevation: 1,
+                  ),
+                ),
+                home: const MainScreen(),
+              );
             }
+          }
 
-            function initCallingSystem() {
-              const randomId = "JM-" + Math.floor(1000 + Math.random() * 9000);
-              peer = new Peer(randomId);
+          class MainScreen extends StatefulWidget {
+            const MainScreen({super.key});
 
-              peer.on('open', (id) => {
-                const idElem = document.getElementById('myCallId');
-                if (idElem) idElem.innerText = id;
-              });
+            @override
+            State<MainScreen> createState() => _MainScreenState();
+          }
 
-              peer.on('call', (incomingCall) => {
-                const accept = confirm("कॉल आ रही है! क्या आप उठाना चाहते हैं?");
-                if (accept) {
-                  navigator.mediaDevices.getUserMedia({ video: true, audio: true }).then((stream) => {
-                    localStream = stream;
-                    document.getElementById('localVideo').srcObject = stream;
-                    incomingCall.answer(stream);
-                    currentCall = incomingCall;
-                    incomingCall.on('stream', (remoteStream) => {
-                      document.getElementById('remoteVideo').srcObject = remoteStream;
-                      const status = document.getElementById('callStatusText');
-                      if (status) {
-                        status.innerText = "🟢 कॉल कनेक्ट हो गई!";
-                        status.style.color = "#25d366";
-                      }
-                    });
-                  }).catch(err => {
-                    alert("कैमरा या माइक परमिशन नहीं मिली");
-                  });
+          class _MainScreenState extends State<MainScreen> {
+            int _currentIndex = 0;
+            BannerAd? _bannerAd;
+            InterstitialAd? _interstitialAd;
+            int _clickCount = 0;
+
+            // Infinite Scroll Controllers & Data
+            final ScrollController _scrollController = ScrollController();
+            List> _feedVideos = [];
+            List> _offlineVideos = [];
+            bool _isLoading = true;
+            bool _isLoadingMore = false;
+            String? _nextPageToken;
+
+            final TextEditingController _searchCtrl = TextEditingController();
+            final TextEditingController _ziniCtrl = TextEditingController();
+            final TextEditingController _callRoomCtrl = TextEditingController(text: "JanManchRoom");
+            final List> _ziniChat = [];
+            bool _ziniLoading = false;
+
+            final Dio _dio = Dio();
+            String _selectedCategory = 'All';
+            final List<String> _categories = [
+              'All',
+              'Bhrashtachar',
+              'Sadak',
+              'Pani',
+              'Bijli',
+              'School',
+              'Hospital'
+            ];
+
+            int _totalStorageUsed = 0;
+            int _todayDownloadUsed = 0;
+
+            @override
+            void initState() {
+              super.initState();
+              _loadBanner();
+              _loadInterstitial();
+              _syncDailyLimits();
+              _loadFeed();
+              _loadOfflineVideos();
+
+              // Infinite scroll listener to load more videos when reaching bottom
+              _scrollController.addListener(() {
+                if (_scrollController.position.pixels >= _scrollController.position.maxScrollExtent - 200) {
+                  _loadMoreVideos();
                 }
               });
             }
 
-            async function makePeerCall(isVideo = true) {
-              const friendId = document.getElementById('peerIdInput').value.trim();
-              const statusText = document.getElementById('callStatusText');
+            @override
+            void dispose() {
+              _bannerAd?.dispose();
+              _interstitialAd?.dispose();
+              _searchCtrl.dispose();
+              _ziniCtrl.dispose();
+              _callRoomCtrl.dispose();
+              _scrollController.dispose();
+              super.dispose();
+            }
 
-              if (!friendId) {
-                alert("कृपया दोस्त की Call ID दर्ज करें!");
+            void _loadBanner() {
+              _bannerAd = BannerAd(
+                adUnitId: ADMOB_BANNER,
+                size: AdSize.banner,
+                request: const AdRequest(),
+                listener: BannerAdListener(
+                  onAdFailedToLoad: (ad, err) {
+                    ad.dispose();
+                    _bannerAd = null;
+                  },
+                ),
+              )..load();
+            }
+
+            void _loadInterstitial() {
+              InterstitialAd.load(
+                adUnitId: ADMOB_INTER,
+                request: const AdRequest(),
+                adLoadCallback: InterstitialAdLoadCallback(
+                  onAdLoaded: (ad) => _interstitialAd = ad,
+                  onAdFailedToLoad: (_) => _interstitialAd = null,
+                ),
+              );
+            }
+
+            void _showInterstitial() {
+              _clickCount++;
+              if (_clickCount % 3 == 0 && _interstitialAd != null) {
+                _interstitialAd!.show();
+                _loadInterstitial();
+              }
+            }
+
+            Future<void> _syncDailyLimits() async {
+              final prefs = await SharedPreferences.getInstance();
+              final todayStr = DateTime.now().toIso8601String().substring(0, 10);
+              final lastActiveDate = prefs.getString('last_active_date') ?? '';
+
+              int dailyUsed = prefs.getInt('today_download') ?? 0;
+              if (lastActiveDate != todayStr) {
+                dailyUsed = 0;
+                await prefs.setString('last_active_date', todayStr);
+                await prefs.setInt('today_download', 0);
+              }
+
+              if (mounted) {
+                setState(() {
+                  _totalStorageUsed = prefs.getInt('storage_used') ?? 0;
+                  _todayDownloadUsed = dailyUsed;
+                });
+              }
+            }
+
+            Future<void> _loadFeed() async {
+              setState(() => _isLoading = true);
+              try {
+                final ytUrl =
+                    'https://www.googleapis.com/youtube/v3/videos?part=snippet,statistics&chart=mostPopular&regionCode=IN&maxResults=25&key=$YT_API_KEY';
+                final res = await http.get(Uri.parse(ytUrl)).timeout(const Duration(seconds: 8));
+
+                if (res.statusCode == 200) {
+                  final data = jsonDecode(res.body);
+                  _nextPageToken = data['nextPageToken'];
+                  _feedVideos = (data['items'] as List).map((e) {
+                    return {
+                      'id': e['id'],
+                      'title': e['snippet']['title'] ?? 'Mudda',
+                      'thumb': e['snippet']['thumbnails']['high']?['url'] ??
+                          e['snippet']['thumbnails']['default']['url'],
+                      'channel': e['snippet']['channelTitle'] ?? 'Jan Manch User',
+                      'type': 'youtube',
+                      'videoId': e['id'],
+                      'category': _categories[Random().nextInt(_categories.length - 1) + 1],
+                      'views': e['statistics']?['viewCount'] ?? '1000'
+                    };
+                  }).toList();
+                } else {
+                  _generateMockFeed();
+                }
+              } catch (_) {
+                _generateMockFeed();
+              }
+
+              // In-App sample playable video inject
+              _feedVideos.insert(0, {
+                'id': 'app_demo_01',
+                'title': 'Sadak Nirman Me Bhrashtachar - Ground Reality Check',
+                'thumb': 'https://picsum.photos/320/180?random=101',
+                'channel': 'Janta Reporter',
+                'type': 'app',
+                'url': 'https://commondatastorage.googleapis.com/gtv-videos-bucket/sample/BigBuckBunny.mp4',
+                'category': 'Sadak',
+                'views': '12500'
+              });
+
+              if (mounted) setState(() => _isLoading = false);
+            }
+
+            // Infinite Scroll Loader (Automatically fetches next page as user scrolls)
+            Future<void> _loadMoreVideos() async {
+              if (_isLoadingMore || _nextPageToken == null) return;
+              setState(() => _isLoadingMore = true);
+
+              try {
+                final ytUrl =
+                    'https://www.googleapis.com/youtube/v3/videos?part=snippet,statistics&chart=mostPopular&regionCode=IN&maxResults=25&pageToken=$_nextPageToken&key=$YT_API_KEY';
+                final res = await http.get(Uri.parse(ytUrl)).timeout(const Duration(seconds: 8));
+
+                if (res.statusCode == 200) {
+                  final data = jsonDecode(res.body);
+                  _nextPageToken = data['nextPageToken'];
+                  final List> moreVideos = (data['items'] as List).map((e) {
+                    return {
+                      'id': e['id'],
+                      'title': e['snippet']['title'] ?? 'Mudda',
+                      'thumb': e['snippet']['thumbnails']['high']?['url'] ??
+                          e['snippet']['thumbnails']['default']['url'],
+                      'channel': e['snippet']['channelTitle'] ?? 'Jan Manch User',
+                      'type': 'youtube',
+                      'videoId': e['id'],
+                      'category': _categories[Random().nextInt(_categories.length - 1) + 1],
+                      'views': e['statistics']?['viewCount'] ?? '1000'
+                    };
+                  }).toList();
+
+                  if (mounted) {
+                    setState(() {
+                      _feedVideos.addAll(moreVideos);
+                      _isLoadingMore = false;
+                    });
+                  }
+                } else {
+                  setState(() => _isLoadingMore = false);
+                }
+              } catch (_) {
+                setState(() => _isLoadingMore = false);
+              }
+            }
+
+            void _generateMockFeed() {
+              _feedVideos = List.generate(15, (i) {
+                return {
+                  'id': 'yt_fallback_$i',
+                  'title': 'Janta Ka Mudda ${i + 1} - Lok Awaaz',
+                  'thumb': 'https://picsum.photos/320/180?random=$i',
+                  'channel': 'Jan Manch News ${i + 1}',
+                  'type': 'youtube',
+                  'videoId': 'dQw4w9WgXcQ',
+                  'category': _categories[i % _categories.length],
+                  'views': '${Random().nextInt(50000)}'
+                };
+              });
+            }
+
+            Future<void> _loadOfflineVideos() async {
+              final prefs = await SharedPreferences.getInstance();
+              final list = prefs.getStringList('downloaded_videos') ?? [];
+              if (mounted) {
+                setState(() {
+                  _offlineVideos = list.map((e) => jsonDecode(e) as Map<String, dynamic>).toList();
+                });
+              }
+            }
+
+            Future<void> _searchVideos(String query) async {
+              if (query.trim().isEmpty) {
+                _loadFeed();
+                return;
+              }
+              setState(() => _isLoading = true);
+              try {
+                final url =
+                    'https://www.googleapis.com/youtube/v3/search?part=snippet&q=${Uri.encodeComponent(query)}&maxResults=25&key=$YT_API_KEY&type=video';
+                final res = await http.get(Uri.parse(url));
+                if (res.statusCode == 200) {
+                  final data = jsonDecode(res.body);
+                  _nextPageToken = data['nextPageToken'];
+                  final searchResult = (data['items'] as List).map((e) {
+                    final vid = e['id']['videoId'] ?? 'dQw4w9WgXcQ';
+                    return {
+                      'id': vid,
+                      'title': e['snippet']['title'],
+                      'thumb': e['snippet']['thumbnails']['high']?['url'] ?? '',
+                      'channel': e['snippet']['channelTitle'],
+                      'type': 'youtube',
+                      'videoId': vid,
+                      'category': 'All',
+                      'views': 'Verified'
+                    };
+                  }).toList();
+
+                  if (mounted) {
+                    setState(() {
+                      _feedVideos = searchResult;
+                      _isLoading = false;
+                    });
+                  }
+                }
+              } catch (_) {
+                if (mounted) setState(() => _isLoading = false);
+              }
+            }
+
+            Future<void> _downloadVideo(Map<String, dynamic> video) async {
+              _showInterstitial();
+
+              if (video['type'] == 'youtube') {
+                showDialog(
+                  context: context,
+                  builder: (_) => AlertDialog(
+                    title: const Text('Direct Download Restricted'),
+                    content: const Text(
+                      'YouTube policy ke tehat seedha local save allow nahi hai. Is video ko Online Stream Player me dekhein.',
+                    ),
+                    actions: [
+                      TextButton(onPressed: () => Navigator.pop(context), child: const Text('Cancel')),
+                      ElevatedButton(
+                        style: ElevatedButton.styleFrom(backgroundColor: Colors.red),
+                        onPressed: () {
+                          Navigator.pop(context);
+                          Navigator.push(context, MaterialPageRoute(builder: (_) => YTPlayer(videoId: video['videoId'])));
+                        },
+                        child: const Text('Stream Now', style: TextStyle(color: Colors.white)),
+                      )
+                    ],
+                  ),
+                );
                 return;
               }
 
-              statusText.innerText = "घंटी बज रही है...";
-              statusText.style.color = "#00f2fe";
+              if (_totalStorageUsed >= 5120) {
+                ScaffoldMessenger.of(context).showSnackBar(
+                  const SnackBar(content: Text('Storage Full! 5GB quota reached.'), backgroundColor: Colors.red),
+                );
+                return;
+              }
+              if (_todayDownloadUsed >= 1024) {
+                ScaffoldMessenger.of(context).showSnackBar(
+                  const SnackBar(content: Text('Aaj ka 1GB download limit poora ho gaya!'), backgroundColor: Colors.orange),
+                );
+                return;
+              }
+
+              await Permission.storage.request();
+              await Permission.videos.request();
 
               try {
-                localStream = await navigator.mediaDevices.getUserMedia({ video: isVideo, audio: true });
-                document.getElementById('localVideo').srcObject = localStream;
-                const call = peer.call(friendId, localStream);
-                currentCall = call;
+                ScaffoldMessenger.of(context).showSnackBar(SnackBar(content: Text('Downloading: ${video['title']}')));
+                final dir = await getApplicationDocumentsDirectory();
+                final savePath = '${dir.path}/${video['id']}.mp4';
 
-                call.on('stream', (remoteStream) => {
-                  document.getElementById('remoteVideo').srcObject = remoteStream;
-                  statusText.innerText = "🟢 कॉल कनेक्ट हो गई!";
-                  statusText.style.color = "#25d366";
-                });
+                await _dio.download(video['url'], savePath);
 
-                call.on('close', () => {
-                  endPeerCall();
+                final prefs = await SharedPreferences.getInstance();
+                final newVideo = {
+                  'id': video['id'],
+                  'title': video['title'],
+                  'localPath': savePath,
+                  'channel': video['channel'],
+                  'date': DateTime.now().toIso8601String().substring(0, 10),
+                };
+
+                final list = prefs.getStringList('downloaded_videos') ?? [];
+                list.add(jsonEncode(newVideo));
+                await prefs.setStringList('downloaded_videos', list);
+
+                setState(() {
+                  _totalStorageUsed += 35;
+                  _todayDownloadUsed += 35;
                 });
-              } catch (err) {
-                console.error(err);
-                statusText.innerText = "❌ कैमरा/माइक परमिशन नहीं मिली";
-                statusText.style.color = "#ff4444";
+                await prefs.setInt('storage_used', _totalStorageUsed);
+                await prefs.setInt('today_download', _todayDownloadUsed);
+                await _loadOfflineVideos();
+
+                if (mounted) {
+                  ScaffoldMessenger.of(context).showSnackBar(
+                    const SnackBar(content: Text('Download Complete! Offline tab me saved hai.'), backgroundColor: Colors.green),
+                  );
+                }
+              } catch (e) {
+                if (mounted) ScaffoldMessenger.of(context).showSnackBar(SnackBar(content: Text('Download failed: $e')));
               }
             }
 
-            function endPeerCall() {
-              if (currentCall) currentCall.close();
-              if (localStream) {
-                localStream.getTracks().forEach(t => t.stop());
-                localStream = null;
-              }
-              document.getElementById('localVideo').srcObject = null;
-              document.getElementById('remoteVideo').srcObject = null;
-              const status = document.getElementById('callStatusText');
-              if (status) {
-                status.innerText = "🔴 कॉल समाप्त हुई";
-                status.style.color = "#ff4444";
+            Future<void> _askZini(String query) async {
+              final text = query.trim();
+              if (text.isEmpty) return;
+
+              setState(() {
+                _ziniChat.add({'role': 'user', 'text': text});
+                _ziniLoading = true;
+                _ziniCtrl.clear();
+              });
+
+              try {
+                final url =
+                    'https://generativelanguage.googleapis.com/v1beta/models/gemini-1.5-flash:generateContent?key=$GEMINI_KEY';
+                final body = {
+                  'contents': [
+                    {
+                      'parts': [
+                        {'text': 'Tu Jan Manch ka AI Zini hai. Janta ke muddo par short aur clear Hindi me uttar de: $text'}
+                      ]
+                    }
+                  ]
+                };
+
+                final res = await http.post(
+                  Uri.parse(url),
+                  headers: {'Content-Type': 'application/json'},
+                  body: jsonEncode(body),
+                ).timeout(const Duration(seconds: 12));
+
+                if (res.statusCode == 200) {
+                  final data = jsonDecode(res.body);
+                  final ans = data['candidates']?[0]?['content']?['parts']?[0]?['text'] ?? 'Koi jawab nahi mila.';
+                  if (mounted) setState(() => _ziniChat.add({'role': 'zini', 'text': ans}));
+                } else {
+                  if (mounted) setState(() => _ziniChat.add({'role': 'zini', 'text': 'Service busy hai.'}));
+                }
+              } catch (_) {
+                if (mounted) setState(() => _ziniChat.add({'role': 'zini', 'text': 'Internet check karein.'}));
+              } finally {
+                if (mounted) setState(() => _ziniLoading = false);
               }
             }
 
-            async function fetchYouTubeVideos(query = "Hindi News Live") {
-              const container = document.getElementById("videoList");
-              container.innerHTML = '<div style="text-align:center; padding:30px; color:#aaa;">Videos load ho rahi hain...</div>';
+            Widget _buildHome() {
+              final list = _selectedCategory == 'All'
+                  ? _feedVideos
+                  : _feedVideos.where((v) => v['category'] == _selectedCategory).toList();
 
-              const url = `https://www.googleapis.com/youtube/v3/search?part=snippet&maxResults=6&q=${encodeURIComponent(query)}&type=video&key=${YOUTUBE_API_KEY}`;
+              return Column(
+                children: [
+                  Padding(
+                    padding: const EdgeInsets.all(8.0),
+                    child: TextField(
+                      controller: _searchCtrl,
+                      decoration: InputDecoration(
+                        hintText: 'Search mudda, gaon, neta...',
+                        prefixIcon: const Icon(Icons.search),
+                        border: OutlineInputBorder(borderRadius: BorderRadius.circular(20)),
+                        isDense: true,
+                        filled: true,
+                        fillColor: Colors.white,
+                      ),
+                      onSubmitted: _searchVideos,
+                    ),
+                  ),
+                  SizedBox(
+                    height: 38,
+                    child: ListView.builder(
+                      scrollDirection: Axis.horizontal,
+                      itemCount: _categories.length,
+                      itemBuilder: (c, i) => Padding(
+                        padding: const EdgeInsets.symmetric(horizontal: 4),
+                        child: ChoiceChip(
+                          label: Text(_categories[i], style: const TextStyle(fontSize: 12)),
+                          selected: _selectedCategory == _categories[i],
+                          onSelected: (_) => setState(() => _selectedCategory = _categories[i]),
+                          selectedColor: Colors.orange.shade200,
+                        ),
+                      ),
+                    ),
+                  ),
+                  Padding(
+                    padding: const EdgeInsets.symmetric(horizontal: 10, vertical: 6),
+                    child: Row(
+                      mainAxisAlignment: MainAxisAlignment.spaceBetween,
+                      children: [
+                        Text('Storage: $_totalStorageUsed / 5120 MB', style: const TextStyle(fontSize: 11, fontWeight: FontWeight.bold)),
+                        Text('Daily Used: $_todayDownloadUsed / 1024 MB', style: const TextStyle(fontSize: 11)),
+                      ],
+                    ),
+                  ),
+                  Expanded(
+                    child: _isLoading
+                        ? const Center(child: CircularProgressIndicator())
+                        : ListView.builder(
+                            controller: _scrollController,
+                            itemCount: list.length + (_isLoadingMore ? 1 : 0),
+                            itemBuilder: (c, i) {
+                              if (i == list.length) {
+                                return const Padding(
+                                  padding: EdgeInsets.all(16.0),
+                                  child: Center(child: CircularProgressIndicator(color: Colors.orange)),
+                                );
+                              }
+                              final v = list[i];
+                              return Card(
+                                margin: const EdgeInsets.symmetric(horizontal: 8, vertical: 4),
+                                child: ListTile(
+                                  leading: Image.network(
+                                    v['thumb'],
+                                    width: 80,
+                                    height: 55,
+                                    fit: BoxFit.cover,
+                                    errorBuilder: (_, __, ___) => Container(width: 80, height: 55, color: Colors.grey.shade300),
+                                  ),
+                                  title: Text(v['title'], maxLines: 2, overflow: TextOverflow.ellipsis, style: const TextStyle(fontSize: 12, fontWeight: FontWeight.bold)),
+                                  subtitle: Text('${v['channel']} • ${v['category']}', style: const TextStyle(fontSize: 10)),
+                                  trailing: IconButton(
+                                    icon: Icon(v['type'] == 'app' ? Icons.download : Icons.ondemand_video,
+                                        color: v['type'] == 'app' ? Colors.green : Colors.red),
+                                    onPressed: () => _downloadVideo(v),
+                                  ),
+                                  onTap: () {
+                                    _showInterstitial();
+                                    if (v['type'] == 'youtube') {
+                                      Navigator.push(context, MaterialPageRoute(builder: (_) => YTPlayer(videoId: v['videoId'])));
+                                    } else {
+                                      Navigator.push(context, MaterialPageRoute(builder: (_) => NativePlayer(url: v['url'], title: v['title'], isLocal: false)));
+                                    }
+                                  },
+                                ),
+                              );
+                            },
+                          ),
+                  ),
+                ],
+              );
+            }
 
-              try {
-                const response = await fetch(url);
-                const data = await response.json();
+            Widget _buildZini() {
+              return Column(
+                children: [
+                  Container(
+                    padding: const EdgeInsets.all(12),
+                    color: Colors.orange.shade100,
+                    child: const Row(
+                      children: [
+                        CircleAvatar(backgroundColor: Colors.orange, child: Text('Z', style: TextStyle(color: Colors.white))),
+                        SizedBox(width: 10),
+                        Text('Mera Zini - AI Salahkaar', style: TextStyle(fontWeight: FontWeight.bold)),
+                      ],
+                    ),
+                  ),
+                  Expanded(
+                    child: _ziniChat.isEmpty
+                        ? const Center(child: Text('Zini se janta ke mudde par baat karein'))
+                        : ListView.builder(
+                            itemCount: _ziniChat.length,
+                            itemBuilder: (c, i) {
+                              final isUser = _ziniChat[i]['role'] == 'user';
+                              return Align(
+                                alignment: isUser ? Alignment.centerRight : Alignment.centerLeft,
+                                child: Container(
+                                  margin: const EdgeInsets.symmetric(horizontal: 10, vertical: 4),
+                                  padding: const EdgeInsets.all(10),
+                                  decoration: BoxDecoration(
+                                    color: isUser ? Colors.orange.shade400 : Colors.white,
+                                    borderRadius: BorderRadius.circular(10),
+                                  ),
+                                  child: Text(_ziniChat[i]['text']!, style: TextStyle(color: isUser ? Colors.white : Colors.black)),
+                                ),
+                              );
+                            },
+                          ),
+                  ),
+                  if (_ziniLoading) const Padding(padding: EdgeInsets.all(8), child: CircularProgressIndicator()),
+                  Padding(
+                    padding: const EdgeInsets.all(8),
+                    child: Row(
+                      children: [
+                        Expanded(
+                          child: TextField(
+                            controller: _ziniCtrl,
+                            decoration: const InputDecoration(hintText: 'Sawaal puchein...', border: OutlineInputBorder(), isDense: true),
+                            onSubmitted: _askZini,
+                          ),
+                        ),
+                        IconButton(icon: const Icon(Icons.send, color: Colors.orange), onPressed: () => _askZini(_ziniCtrl.text)),
+                      ],
+                    ),
+                  ),
+                ],
+              );
+            }
 
-                if (data.items && data.items.length > 0) {
-                  container.innerHTML = "";
-                  data.items.forEach(item => {
-                    const videoId = item.id.videoId;
-                    const title = item.snippet.title;
-                    const channel = item.snippet.channelTitle;
+            Widget _buildOfflineDownloads() {
+              return _offlineVideos.isEmpty
+                  ? const Center(child: Text('Koi offline video download nahi hai.\nHome tab se video download karein.'))
+                  : ListView.builder(
+                      itemCount: _offlineVideos.length,
+                      itemBuilder: (c, i) {
+                        final v = _offlineVideos[i];
+                        return Card(
+                          margin: const EdgeInsets.symmetric(horizontal: 10, vertical: 5),
+                          child: ListTile(
+                            leading: const Icon(Icons.offline_pin, color: Colors.green, size: 36),
+                            title: Text(v['title'], style: const TextStyle(fontWeight: FontWeight.bold, fontSize: 13)),
+                            subtitle: Text('Downloaded: ${v['date']} • Saved on Storage'),
+                            trailing: const Icon(Icons.play_circle_fill, color: Colors.orange, size: 36),
+                            onTap: () {
+                              Navigator.push(
+                                context,
+                                MaterialPageRoute(
+                                  builder: (_) => NativePlayer(url: v['localPath'], title: v['title'], isLocal: true),
+                                ),
+                              );
+                            },
+                          ),
+                        );
+                      },
+                    );
+            }
 
-                    const card = document.createElement("div");
-                    card.className = "video-card";
-                    card.innerHTML = `
-                      <div class="video-player-container">
-                        <iframe src="https://www.youtube.com/embed/${videoId}" allowfullscreen></iframe>
-                      </div>
-                      <div class="video-info" onclick="onVideoClick()">
-                        <div class="channel-avatar">▶</div>
-                        <div class="video-details">
-                          <h4>${title}</h4>
-                          <p>${channel} • Live Video</p>
-                        </div>
-                      </div>
-                    `;
-                    container.appendChild(card);
+            Widget _buildLiveCall() {
+              return Center(
+                child: Padding(
+                  padding: const EdgeInsets.all(20.0),
+                  child: Column(
+                    mainAxisAlignment: MainAxisAlignment.center,
+                    children: [
+                      const Icon(Icons.video_call, size: 80, color: Colors.green),
+                      const SizedBox(height: 10),
+                      const Text('Jan Manch Live Calling Engine', style: TextStyle(fontSize: 18, fontWeight: FontWeight.bold)),
+                      const SizedBox(height: 6),
+                      const Text('WebRTC Video + Audio Live Call Link', style: TextStyle(color: Colors.grey)),
+                      const SizedBox(height: 20),
+                      TextField(
+                        controller: _callRoomCtrl,
+                        decoration: const InputDecoration(
+                          labelText: 'Room Name',
+                          border: OutlineInputBorder(),
+                          helperText: 'Dono devices me same Room Name daalkar jud sakte hain',
+                        ),
+                      ),
+                      const SizedBox(height: 15),
+                      ElevatedButton.icon(
+                        style: ElevatedButton.styleFrom(backgroundColor: Colors.green, padding: const EdgeInsets.symmetric(horizontal: 24, vertical: 12)),
+                        icon: const Icon(Icons.call, color: Colors.white),
+                        label: const Text('Start Live Call (Camera + Mic)', style: TextStyle(color: Colors.white, fontSize: 16)),
+                        onPressed: () async {
+                          await Permission.camera.request();
+                          await Permission.microphone.request();
+                          if (mounted) {
+                            Navigator.push(
+                              context,
+                              MaterialPageRoute(
+                                builder: (_) => WebRTCCallScreen(roomName: _callRoomCtrl.text.trim()),
+                              ),
+                            );
+                          }
+                        },
+                      )
+                    ],
+                  ),
+                ),
+              );
+            }
+
+            @override
+            Widget build(BuildContext context) {
+              return Scaffold(
+                appBar: AppBar(
+                  title: const Text('Jan Manch - Janta Ki Awaaz'),
+                  actions: [IconButton(icon: const Icon(Icons.refresh), onPressed: _loadFeed)],
+                ),
+                body: Column(
+                  children: [
+                    Expanded(
+                      child: IndexedStack(
+                        index: _currentIndex,
+                        children: [_buildHome(), _buildZini(), _buildOfflineDownloads(), _buildLiveCall()],
+                      ),
+                    ),
+                    if (_bannerAd != null) SizedBox(height: 50, child: AdWidget(ad: _bannerAd!)),
+                  ],
+                ),
+                bottomNavigationBar: BottomNavigationBar(
+                  currentIndex: _currentIndex,
+                  onTap: (i) {
+                    setState(() => _currentIndex = i);
+                    _showInterstitial();
+                  },
+                  selectedItemColor: Colors.orange,
+                  unselectedItemColor: Colors.grey,
+                  type: BottomNavigationBarType.fixed,
+                  items: const [
+                    BottomNavigationBarItem(icon: Icon(Icons.home), label: 'Home'),
+                    BottomNavigationBarItem(icon: Icon(Icons.smart_toy), label: 'Mera Zini'),
+                    BottomNavigationBarItem(icon: Icon(Icons.download_done), label: 'Offline'),
+                    BottomNavigationBarItem(icon: Icon(Icons.call), label: 'Live Call'),
+                  ],
+                ),
+              );
+            }
+          }
+
+          class WebRTCCallScreen extends StatelessWidget {
+            final String roomName;
+            const WebRTCCallScreen({super.key, required this.roomName});
+
+            @override
+            Widget build(BuildContext context) {
+              final cleanRoom = roomName.isEmpty ? "JanManchPublicRoom" : roomName;
+              return Scaffold(
+                appBar: AppBar(title: Text('Live Call: $cleanRoom'), backgroundColor: Colors.green),
+                body: InAppWebView(
+                  initialUrlRequest: URLRequest(url: WebUri('https://meet.jit.si/$cleanRoom')),
+                  initialSettings: InAppWebViewSettings(
+                    mediaPlaybackRequiresUserGesture: false,
+                    allowsInlineMediaPlayback: true,
+                    javaScriptEnabled: true,
+                  ),
+                  onPermissionRequest: (controller, request) async {
+                    return PermissionResponse(
+                      resources: request.resources,
+                      action: PermissionResponseAction.GRANT,
+                    );
+                  },
+                ),
+              );
+            }
+          }
+
+          class YTPlayer extends StatelessWidget {
+            final String videoId;
+            const YTPlayer({super.key, required this.videoId});
+
+            @override
+            Widget build(BuildContext context) {
+              return Scaffold(
+                appBar: AppBar(title: const Text('YouTube Streaming'), backgroundColor: Colors.red),
+                body: InAppWebView(
+                  initialUrlRequest: URLRequest(url: WebUri('https://www.youtube.com/watch?v=$videoId')),
+                  initialSettings: InAppWebViewSettings(javaScriptEnabled: true),
+                ),
+              );
+            }
+          }
+
+          class NativePlayer extends StatefulWidget {
+            final String url;
+            final String title;
+            final bool isLocal;
+            const NativePlayer({super.key, required this.url, required this.title, required this.isLocal});
+
+            @override
+            State<NativePlayer> createState() => _NativePlayerState();
+          }
+
+          class _NativePlayerState extends State<NativePlayer> {
+            VideoPlayerController? _vCtrl;
+            ChewieController? _cCtrl;
+
+            @override
+            void initState() {
+              super.initState();
+              if (widget.isLocal) {
+                _vCtrl = VideoPlayerController.file(File(widget.url));
+              } else {
+                _vCtrl = VideoPlayerController.networkUrl(Uri.parse(widget.url));
+              }
+
+              _vCtrl!.initialize().then((_) {
+                if (mounted) {
+                  setState(() {
+                    _cCtrl = ChewieController(videoPlayerController: _vCtrl!, autoPlay: true);
                   });
                 }
-              } catch (err) {
-                container.innerHTML = '<div style="text-align:center; padding:20px; color:#f66;">Video fetch error. Check API key.</div>';
-              }
+              });
             }
 
-            function handleSearch() {
-              const q = document.getElementById("searchInput").value;
-              if (q) fetchYouTubeVideos(q);
+            @override
+            void dispose() {
+              _vCtrl?.dispose();
+              _cCtrl?.dispose();
+              super.dispose();
             }
 
-            function refreshFeed() {
-              const q = document.getElementById("searchInput").value || "Hindi News Live";
-              fetchYouTubeVideos(q);
+            @override
+            Widget build(BuildContext context) {
+              return Scaffold(
+                appBar: AppBar(title: Text(widget.title), backgroundColor: Colors.orange),
+                body: _cCtrl != null && _vCtrl!.value.isInitialized
+                    ? Chewie(controller: _cCtrl!)
+                    : const Center(child: CircularProgressIndicator()),
+              );
             }
+          }
+          EOF
 
-            function onVideoClick() {
-              clickCount++;
-              if (clickCount % 2 === 0) showInterstitialAd();
-            }
+      - name: Install Flutter Packages
+        run: flutter pub get
 
-            async function sendZiniPrompt() {
-              const input = document.getElementById("ziniInput");
-              const prompt = input.value.trim();
-              if (!prompt) return;
+      - name: Build Standalone Release APK
+        run: flutter build apk --release
 
-              const chatBox = document.getElementById("ziniMessages");
-              const userBubble = document.createElement("div");
-              userBubble.className = "chat-bubble bubble-user";
-              userBubble.innerText = prompt;
-              chatBox.appendChild(userBubble);
-              input.value = "";
-
-              const aiBubble = document.createElement("div");
-              aiBubble.className = "chat-bubble bubble-ai";
-              aiBubble.innerHTML = "<i>ज़िनी सोच रहा है...</i>";
-              chatBox.appendChild(aiBubble);
-              chatBox.scrollTop = chatBox.scrollHeight;
-
-              const geminiEndpoint = `https://generativelanguage.googleapis.com/v1beta/models/gemini-1.5-flash:generateContent?key=${GEMINI_API_KEY}`;
-
-              try {
-                const res = await fetch(geminiEndpoint, {
-                  method: "POST",
-                  headers: { "Content-Type": "application/json" },
-                  body: JSON.stringify({ contents: [{ parts: [{ text: prompt }] }] })
-                });
-                const data = await res.json();
-                if (data.candidates && data.candidates[0].content.parts[0].text) {
-                  aiBubble.innerHTML = `<b>मेरा ज़िनी:</b> ${data.candidates[0].content.parts[0].text}`;
-                } else {
-                  aiBubble.innerHTML = "<b>मेरा ज़िनी:</b> उत्तर प्राप्त नहीं हो सका।";
-                }
-              } catch (err) {
-                aiBubble.innerHTML = "<b>मेरा ज़िनी:</b> सर्वर से कनेक्ट करने में दिक्कत आई।";
-              }
-              chatBox.scrollTop = chatBox.scrollHeight;
-            }
-
-            function showInterstitialAd() {
-              console.log("Triggering Interstitial Ad");
-            }
-
-            window.onload = () => {
-              fetchYouTubeVideos();
-              initCallingSystem();
-            };
-          </script>
-        </body>
-        </html>
-        EOF
-
-    - name: Setup Node.js
-      uses: actions/setup-node@v4
-      with:
-        node-version: 18
-
-    - name: Setup Java JDK 17
-      uses: actions/setup-java@v4
-      with:
-        distribution: 'zulu'
-        java-version: '17'
-
-    - name: Setup Android SDK
-      uses: android-actions/setup-android@v3
-
-    - name: Initialize Project & Capacitor
-      run: |
-        npm init -y
-        npm install @capacitor/core@latest @capacitor/cli@latest @capacitor/android@latest
-        npx cap init "Jan Manch" "com.janmanch.app" --web-dir .
-        npx cap add android
-        npx cap sync android
-
-    - name: Add Android Permissions & AdMob ID
-      run: |
-        sed -i '/<application/i \
-        <uses-permission android:name="android.permission.INTERNET" />\n\
-        <uses-permission android:name="android.permission.CAMERA" />\n\
-        <uses-permission android:name="android.permission.RECORD_AUDIO" />\n\
-        <uses-permission android:name="android.permission.MODIFY_AUDIO_SETTINGS" />' android/app/src/main/AndroidManifest.xml
-        
-        sed -i '/<application/a \
-        <meta-data android:name="com.google.android.gms.ads.APPLICATION_ID" android:value="ca-app-pub-789065935364725~4876027857"/>' android/app/src/main/AndroidManifest.xml
-
-    - name: Build Debug APK
-      run: |
-        cd android
-        chmod +x gradlew
-        ./gradlew assembleDebug
-
-    - name: Upload APK File
-      uses: actions/upload-artifact@v4
-      with:
-        name: JanManch-Release-APK
-        path: android/app/build/outputs/apk/debug/app-debug.apk
+      - name: Upload Finished APK
+        uses: actions/upload-artifact@v3
+        with:
+          name: jan-manch-final-pro-release
+          path: build/app/outputs/flutter-apk/app-release.apk
