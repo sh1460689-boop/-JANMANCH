@@ -1,21 +1,95 @@
-MIT License
+name: "Jan Manch Super-App Production CI/CD Pipeline"
 
-Copyright (c) 2026 KSINGH
+on:
+  push:
+    branches:
+      - "main"
+      - "master"
+    paths-ignore:
+      - '**.md'
+      - 'docs/**'
+  pull_request:
+    branches:
+      - "main"
+      - "master"
 
-Permission is hereby granted, free of charge, to any person obtaining a copy
-of this software and associated documentation files (the "Software"), to deal
-in the Software without restriction, including without limitation the rights
-to use, copy, modify, merge, publish, distribute, sublicense, and/or sell
-copies of the Software, and to permit persons to whom the Software is
-furnished to do so, subject to the following conditions:
+env:
+  FLUTTER_CHANNEL: "stable"
+  FLUTTER_VERSION: "3.19.x"
+  JAVA_VERSION: "17"
+  PROJECT_NAME: "Jan Manch"
 
-The above copyright notice and this permission notice shall be included in all
-copies or substantial portions of the Software.
+jobs:
+  code_quality_and_lint:
+    name: "Phase 1: Code Quality & Analysis"
+    runs-on: ubuntu-latest
+    steps:
+      - name: Checkout Repository Code
+        uses: actions/checkout@v4
 
-THE SOFTWARE IS PROVIDED "AS IS", WITHOUT WARRANTY OF ANY KIND, EXPRESS OR
-IMPLIED, INCLUDING BUT NOT LIMITED TO THE WARRANTIES OF MERCHANTABILITY,
-FITNESS FOR A PARTICULAR PURPOSE AND NONINFRINGEMENT. IN NO EVENT SHALL THE
-AUTHORS OR COPYRIGHT HOLDERS BE LIABLE FOR ANY CLAIM, DAMAGES OR OTHER
-LIABILITY, WHETHER IN AN ACTION OF CONTRACT, TORT OR OTHERWISE, ARISING FROM,
-OUT OF OR IN CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN THE
-SOFTWARE.
+      - name: Setup Java Development Kit
+        uses: actions/setup-java@v3
+        with:
+          distribution: 'zulu'
+          java-version: ${{ env.JAVA_VERSION }}
+
+      - name: Setup Flutter Framework SDK
+        uses: subosito/flutter-action@v2
+        with:
+          flutter-version: ${{ env.FLUTTER_VERSION }}
+          channel: ${{ env.FLUTTER_CHANNEL }}
+          cache: true
+
+      - name: Install Pub Dependencies
+        run: flutter pub get
+
+      - name: Analyze Dart Source Code
+        run: flutter analyze
+
+  build_release_apk:
+    name: "Phase 2: Compile & Build Android Release APK"
+    needs: code_quality_and_lint
+    runs-on: ubuntu-latest
+
+    steps:
+      - name: Checkout Repository Code
+        uses: actions/checkout@v4
+
+      - name: Setup Java Development Kit
+        uses: actions/setup-java@v3
+        with:
+          distribution: 'zulu'
+          java-version: ${{ env.JAVA_VERSION }}
+
+      - name: Setup Flutter Framework SDK
+        uses: subosito/flutter-action@v2
+        with:
+          flutter-version: ${{ env.FLUTTER_VERSION }}
+          channel: ${{ env.FLUTTER_CHANNEL }}
+          cache: true
+          cache-key: "flutter-:os:-:channel:-:version:-:arch:-:hash:"
+
+      - name: Verify Flutter Installation & Environment
+        run: flutter doctor -v
+
+      - name: Fetch and Cache Pub Packages
+        run: flutter pub get
+
+      - name: Clean Previous Build Artifacts
+        run: flutter clean
+
+      - name: Run Build Runner (If generators used)
+        run: flutter pub run build_runner build --delete-conflicting-outputs || true
+
+      - name: Build Android Release APK Package
+        run: flutter build apk --release --verbose
+
+      - name: Verify APK Output Directory Exists
+        run: ls -la build/app/outputs/flutter-apk/
+
+      - name: Archive and Upload Release APK Artifact
+        uses: actions/upload-artifact@v4
+        with:
+          name: jan-manch-production-release-apk
+          path: build/app/outputs/flutter-apk/app-release.apk
+          retention-days: 90
